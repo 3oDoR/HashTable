@@ -39,7 +39,7 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
             throw new NullPointerException();
         }
 
-        return keySet.contains((K) key);
+        return keySet.contains(key);
     }
 
     /**
@@ -306,8 +306,33 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
         private void setPrev(Node<K> prev) {
             this.prev = prev;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Node<?> node = (Node<?>) o;
+            return key.equals(node.key) && value.equals(node.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(key, next, prev);
+        }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SimpleHashTable<?> hashTable = (SimpleHashTable<?>) o;
+        return size == hashTable.size && Objects.equals(nodes, hashTable.nodes) && Objects.equals(keySet, hashTable.keySet);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nodes, keySet, size);
+    }
 
     private int hash(Object o) {
         return 31 ^ o.hashCode();

@@ -86,5 +86,14 @@ class SimpleHashTableTest {
         assertEquals("[5, 42]",hashTable.values().toString());
     }
 
+    @Test
+    void equals() {
+        SimpleHashTable hashTable2 = new SimpleHashTable();
+        hashTable.put("rs",5);
+        hashTable2.put("rs",5);
+
+        assertTrue(hashTable.equals(hashTable2));
+    }
+
 
 }
