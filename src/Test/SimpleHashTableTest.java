@@ -90,7 +90,9 @@ class SimpleHashTableTest {
     void equals() {
         SimpleHashTable hashTable2 = new SimpleHashTable();
         hashTable.put("rs",5);
+        hashTable.put("e",8);
         hashTable2.put("rs",5);
+        hashTable2.put("e",8);
 
         assertTrue(hashTable.equals(hashTable2));
     }

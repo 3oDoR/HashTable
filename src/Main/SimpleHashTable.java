@@ -326,7 +326,9 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SimpleHashTable<?> hashTable = (SimpleHashTable<?>) o;
-        return size == hashTable.size && Objects.equals(nodes, hashTable.nodes) && Objects.equals(keySet, hashTable.keySet);
+        return size == hashTable.size &&
+                Objects.equals(nodes, hashTable.nodes) &&
+                Objects.equals(keySet, hashTable.keySet);
     }
 
     @Override
