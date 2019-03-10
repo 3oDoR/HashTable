@@ -5,9 +5,13 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class SimpleHashTable<K> implements Map<K, Integer> {
-    private List<Node> nodes = new ArrayList<>();
+    private Node[] nodes;
+    private int INITIAL_CAPACITY = 64;
     private List<K> keySet = new ArrayList<K>();
-    private int size = 0;
+
+    public SimpleHashTable() {
+        nodes = new Node[INITIAL_CAPACITY];
+    }
 
 
     /**
@@ -15,7 +19,7 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
      */
     @Override
     public int size() {
-        return size;
+        return keySet.size();
     }
 
     /**
@@ -24,7 +28,7 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
      */
     @Override
     public boolean isEmpty() {
-        return size == 0;
+        return keySet.isEmpty();
     }
 
 
@@ -34,7 +38,7 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
      * @return if there is such a key outputs the true otherwise false
      */
     @Override
-    public boolean containsKey(Object key) {
+        public boolean containsKey(Object key) {
         if (key == null) {
             throw new NullPointerException();
         }
@@ -77,15 +81,19 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
             throw new NullPointerException();
         }
 
-        for (Node node : nodes) {
-            if (hash(node.getKey()) != hash(key)) {
-                continue;
-            }
+        int index = getIndex(key);
 
-            for (Node next = node; next != null; next = next.getNext()) {
-                if (key.equals(next.getKey())) {
-                    return next.getValue();
-                }
+        if (nodes.length < index) {
+            return null;
+        }
+
+        if (nodes[index] == null) {
+            return null;
+        }
+
+        for (Node next = nodes[index]; next != null; next = next.getNext()) {
+            if (key.equals(next.getKey())) {
+                return next.getValue();
             }
         }
 
@@ -109,33 +117,24 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
             return null;
         }
 
-        for (Node node : nodes) {
-            if (hash(node.getKey()) != hash(key)) {
-                continue;
-            }
+        int index = getIndex(key);
 
-            for (Node next = node; next != null; next = next.getNext()) {
+        if (nodes[index] == null) {
+            nodes[index] = new Node(key, value);
+            keySet.add(key);
+        } else {
+            for (Node next = nodes[index]; next != null; next = next.getNext()) {
                 if (key.equals(next.getKey())) {
                     next.setValue(value);
 
                     return value;
                 } else if (next.getNext() == null) {
                     next.setNext(new Node(key, value));
-
                     keySet.add(key);
-
-                    size++;
-
                     return value;
                 }
             }
         }
-
-        nodes.add(new Node(key, value));
-
-        keySet.add(key);
-
-        size++;
 
         return value;
     }
@@ -151,47 +150,46 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
             throw new NullPointerException();
         }
 
-        for (Node node : nodes) {
-            if (hash(node.getKey()) != hash(key)) {
-                continue;
-            }
+        int index = getIndex(key);
 
-            for (Node next = node; next != null; next = next.getNext()) {
-                if (key.equals(next.getKey())) {
-                    if (next.getNext() != null) {
-                        if (next.getPrev() != null) {
-                            Node swap = next.getPrev();
+        if (index > nodes.length) {
+            return null;
+        }
 
-                            swap.setNext(next.getNext());
+        if (nodes[index] == null) {
+            return null;
+        }
 
-                            keySet.remove((K) key);
-
-                            size--;
-
-                            return next.getValue();
-                        }
-
-
-                        node = next.getNext();
-
-                        node.setPrev(null);
-
-                        keySet.remove((K) key);
-
-                        size --;
-
-                        return node.getValue();
-
-                    }
-
-                    nodes.remove(next);
-
-                    keySet.remove((K) key);
-
-                    size--;
-
-                    return next.getValue();
+        for (Node next = nodes[index];next != null; next = next.getNext()){
+            if (key.equals(next.getKey())) {
+                if (next.getNext() == null && next.getPrev() == null) {
+                    nodes[index] = null;
                 }
+
+                if (next.getPrev() != null && next.getNext() != null) {
+                    next.getPrev().setNext(next.getNext());
+
+                    next.getNext().setPrev(next.getPrev());
+                }
+
+                if (next.getNext() != null && next.getPrev() == null) {
+                    next.getNext().setPrev(null);
+
+                    nodes[index] = next.getNext();
+
+                    next.setNext(null);
+                }
+
+                if (next.getNext() == null && next.getPrev() != null) {
+                    next.getPrev().setNext(null);
+
+                    next.setPrev(null);
+
+                }
+
+                keySet.remove(key);
+
+                return next.getValue();
             }
         }
 
@@ -203,12 +201,15 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
      * puts all values from m into the display
      * @param m parameter from which all values are moved
      */
-    @Override
-    public void putAll(Map<? extends K, ? extends Integer> m) {
-        for (Map.Entry entry: m.entrySet()) {
-            put((K) entry.getKey(), (Integer) entry.getValue());
-        }
-    }
+   @Override
+   public void putAll(Map<? extends K, ? extends Integer> m) {
+           for (Map.Entry entry: m.entrySet()) {
+               if (entry == null){
+                   continue;
+               }
+           put((K) entry.getKey(), (Integer) entry.getValue());
+       }
+   }
 
 
     /**
@@ -216,9 +217,9 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
      */
     @Override
     public void clear() {
-        nodes = new ArrayList<>();
+        nodes = new Node[INITIAL_CAPACITY];
 
-        size = 0;
+        keySet.clear();
     }
 
     /**
@@ -236,9 +237,12 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
      */
     @Override
     public Collection<Integer> values() {
-        List<Integer> result = new ArrayList<>(size);
+        List<Integer> result = new ArrayList<>();
 
         for (Node node: nodes) {
+            if (node == null){
+                continue;
+            }
             result.add(node.getValue());
 
             for (Node next = node.getNext(); next != null; next = next.getNext()) {
@@ -254,6 +258,9 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
         Set result = new HashSet();
 
         for (Node node: nodes) {
+            if (node == null){
+                continue;
+            }
             result.add(node);
 
             for (Node next = node.getNext(); next != null; next = next.getNext()) {
@@ -312,12 +319,15 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Node<?> node = (Node<?>) o;
-            return key.equals(node.key) && value.equals(node.value);
+            return Objects.equals(key, node.key) &&
+                    Objects.equals(value, node.value) &&
+                    Objects.equals(next, node.next) &&
+                    Objects.equals(prev, node.prev);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(key, next, prev);
+            return Objects.hash(key, value, next, prev);
         }
     }
 
@@ -326,18 +336,24 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SimpleHashTable<?> hashTable = (SimpleHashTable<?>) o;
-        return size == hashTable.size &&
-                Objects.equals(nodes, hashTable.nodes) &&
+        return INITIAL_CAPACITY == hashTable.INITIAL_CAPACITY &&
+                Arrays.equals(nodes, hashTable.nodes) &&
                 Objects.equals(keySet, hashTable.keySet);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nodes, keySet, size);
+        int result = Objects.hash(INITIAL_CAPACITY, keySet);
+        result = 31 * result + Arrays.hashCode(nodes);
+        return result;
     }
 
     private int hash(Object o) {
         return 31 ^ o.hashCode();
+    }
+
+    private int getIndex (Object key) {
+        return hash(key) & (nodes.length - 1);
     }
 
 
@@ -347,11 +363,17 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
         sb.append("SimpleHashTable{\n");
 
         for (Node node: nodes) {
-            sb.append("Key: ");
-            sb.append(node.getKey());
-            sb.append(" Value: ");
-            sb.append(node.getValue());
-            sb.append("\n");
+            if (node == null) {
+                continue;
+            }
+
+            for (Node next = node; next != null; next = next.getNext()) {
+                sb.append("Key: ");
+                sb.append(next.getKey());
+                sb.append(" Value: ");
+                sb.append(next.getValue());
+                sb.append("\n");
+            }
         }
 
         sb.append("}");
