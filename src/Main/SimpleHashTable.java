@@ -1,6 +1,13 @@
 package Main;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 
 @SuppressWarnings("unchecked")
@@ -160,7 +167,7 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
             return null;
         }
 
-        for (Node next = nodes[index];next != null; next = next.getNext()){
+        for (Node next = nodes[index];next != null; next = next.getNext())
             if (key.equals(next.getKey())) {
                 if (next.getNext() == null && next.getPrev() == null) {
                     nodes[index] = null;
@@ -191,7 +198,6 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
 
                 return next.getValue();
             }
-        }
 
         return null;
     }
@@ -228,7 +234,7 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
      */
     @Override
     public Set<K> keySet() {
-        return new HashSet<K>(keySet);
+        return new HashSet<>(keySet);
     }
 
     /**
@@ -273,13 +279,13 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
 
 
 
-    private static class Node<K> implements Map.Entry<K, Integer> {
+    public static class Node<K> implements Map.Entry<K, Integer> {
         private K key;
         private Integer value;
         private Node<K> next;
         private Node<K> prev;
 
-        private Node(K key, Integer value) {
+        public Node(K key, Integer value) {
             this.key = key;
             this.value = value;
         }
@@ -349,7 +355,7 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
     }
 
     private int hash(Object o) {
-        return 31 ^ o.hashCode();
+        return o.hashCode();
     }
 
     private int getIndex (Object key) {
