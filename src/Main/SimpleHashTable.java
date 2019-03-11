@@ -14,7 +14,7 @@ import java.util.Set;
 public class SimpleHashTable<K> implements Map<K, Integer> {
     private Node[] nodes;
     private int INITIAL_CAPACITY = 64;
-    private List<K> keySet = new ArrayList<K>();
+    private List<K> keySet = new ArrayList<>();
 
     public SimpleHashTable() {
         nodes = new Node[INITIAL_CAPACITY];
@@ -87,12 +87,8 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
         if (key == null) {
             throw new NullPointerException();
         }
-
         int index = getIndex(key);
 
-        if (nodes.length < index) {
-            return null;
-        }
 
         if (nodes[index] == null) {
             return null;
@@ -159,15 +155,11 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
 
         int index = getIndex(key);
 
-        if (index > nodes.length) {
-            return null;
-        }
-
         if (nodes[index] == null) {
             return null;
         }
 
-        for (Node next = nodes[index];next != null; next = next.getNext())
+        for (Node next = nodes[index];next != null; next = next.getNext()) {
             if (key.equals(next.getKey())) {
                 if (next.getNext() == null && next.getPrev() == null) {
                     nodes[index] = null;
@@ -198,6 +190,7 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
 
                 return next.getValue();
             }
+        }
 
         return null;
     }
@@ -279,13 +272,13 @@ public class SimpleHashTable<K> implements Map<K, Integer> {
 
 
 
-    public static class Node<K> implements Map.Entry<K, Integer> {
+    private static class Node<K> implements Map.Entry<K, Integer> {
         private K key;
         private Integer value;
         private Node<K> next;
         private Node<K> prev;
 
-        public Node(K key, Integer value) {
+        private Node(K key, Integer value) {
             this.key = key;
             this.value = value;
         }
